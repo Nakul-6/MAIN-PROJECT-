@@ -1,0 +1,6 @@
+***Starting server on port 50046 ***
+Loading net-file from './sumo_berlin/map.net.xml' ... done (630ms).
+Loading done.
+Simulation version 1.27.1 started with time: 0.00.
+Error: tcpip::Socket::recvAndCheck @ recv: peer shutdown
+Quitting (on error).

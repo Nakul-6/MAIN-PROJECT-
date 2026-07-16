@@ -1,0 +1,46 @@
+{
+	"version": 1,
+	"base_image": "registry.codeocean.com/codeocean/pytorch:2.1.0-cuda11.8.0-mambaforge23.1.0-4-python3.10.12-ubuntu22.04",
+	"options": {},
+	"installers": {
+		"apt": {
+			"packages": [
+				{
+					"name": "sumo",
+					"version": "1.12.0+dfsg1-1"
+				}
+			],
+			"install_software_properties_common": true
+		},
+		"pip": {
+			"packages": [
+				{
+					"name": "matplotlib",
+					"version": "3.9.1"
+				},
+				{
+					"name": "osmnx",
+					"version": "1.9.3"
+				},
+				{
+					"name": "scikit-learn",
+					"version": "1.5.1"
+				},
+				{
+					"name": "sumolib",
+					"version": "1.20.0"
+				},
+				{
+					"name": "tensorboard",
+					"version": "2.17.0"
+				},
+				{
+					"name": "traci",
+					"version": "1.20.0"
+				}
+			],
+			"options": {},
+			"pre_install_options": {}
+		}
+	}
+}

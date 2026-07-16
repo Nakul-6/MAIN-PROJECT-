@@ -1,0 +1,30 @@
+metadata_version: 1
+name: '​Supplementary code for: Privacy-Preserving Hierarchical Reinforcement Learning
+  Framework for Task Offloading in Low-Altitude Vehicular Fog Computing'
+description: |-
+  This code provides numerical simulation for how hierarchical FL framework in low-altitude VFC. The lower level is AFedPPO, and the higher is a contextual clustering & personalized FL mechanism. Details are shown in the published paper.
+
+  Abstract:
+  Vehicular Fog Computing (VFC) is a promising paradigm in intelligent transportation systems (ITS), which offloads computation-intensive tasks to mobile fog nodes for real-time and low-latency services. In the forthcoming era of low-altitude economy, Unmanned Aerial Vehicles (UAVs) are being integrated as task-carrying entities into the ITS, and the novel low-altitude VFC is witnessing new challenges, introduced by dynamic UAV missions, high mobility, and privacy concerns. To preserve the offloading privacy and enhance the offloading performance in the dynamic low-altitude VFC, in this paper, we facilitate the learning-based methods and propose a hierarchical federated reinforcement learning framework. The framework consists of two levels: the local level provides Deep Reinforcement Learning (DRL) models for task vehicles and UAVs, and the cross-regional contextual level for coordinating the local experiences. At the local DRL level, we design an Attention-enhanced Federated Proximal Policy Optimization (AFedPPO) algorithm to enable decentralized training and execution (DTDE) for task offloading, which is privacy-preserving, effective, and scalable for the low-altitude VFC systems. At the cross-regional level, we introduce a contextual clustering and personalized (CCP) federated learning (FL) mechanism, which adaptively aggregates the local experiences according to the regional features. Extensive simulation results validate an average 35% improvement of the proposed framework compared to the state-of-the-art FL schemes, and in some cases, even outperform the centralized training (CTDE) baseline. To the best of our knowledge, this is the first work to theoretically discuss how contextual information can enhance the performance of the DRL-based offloading strategy under FL settings.
+tags:
+- federated learning
+- reinforcement learning
+- Vehicular Fog Computing
+- Task Offloading
+- Privacy-preserving AI
+authors:
+- name: Zhiwei Wei
+  affiliations:
+  - name: Tongji University
+- name: Jingxin Mao
+  affiliations:
+  - name: Tongji University
+- name: Bing Li
+  affiliations:
+  - name: Tongji University
+- name: Rongqing Zhang
+  affiliations:
+  - name: Tongji University
+corresponding_contributor:
+  name: Bing Li
+  email: lizi@tongji.edu.cn

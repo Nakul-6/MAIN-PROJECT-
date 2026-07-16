@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -ex
+
+# This is the master script for the capsule. When you click "Reproducible Run", the code in this file will execute.
+# The whole FL-DRL process needs long run to train, here only set --n_episode 1 for testing. 
+# If want to rerun the paper-version code, just do not add any --parameter and change the settings in masac_config_parser.py, and run it. You can change the "method" variable to any method in "potential_methods" list, as "MAPPO_AggFed_cluster2_local" is the proposed method in the paper.
+# Also, change the "st_iter_id" parameter as 0 or 2, to simulate total 4 Deployments. This is for parallel simulation.
+python -u main_FL_DRL.py --n_episode 1"$@"
