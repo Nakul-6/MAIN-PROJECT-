@@ -4,3 +4,25 @@
 /runs3/
 /all_csv_data/
 # /models/
+
+__pycache__/
+*.py[cod]
+*.pyo
+
+venv/
+.venv/
+env/
+
+code/snapshot.json
+code/sumo.log
+
+events.out.tfevents.*
+results/**/events.out.tfevents*
+
+.streamlit/
+
+.vscode/
+.idea/
+
+.DS_Store
+Thumbs.db
