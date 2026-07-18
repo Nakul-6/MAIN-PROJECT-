@@ -1,129 +1,328 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import json
 import os
+import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 
-st_autorefresh(interval=1000,key="refresh")
+# ----------------------------------------------------
+# Auto Refresh
+# ----------------------------------------------------
+st_autorefresh(interval=1000, key="refresh")
 
 st.set_page_config(
     page_title="AirFogSim Dashboard",
+    page_icon="🚗",
     layout="wide"
 )
 
 st.title("🚗 AirFogSim Vehicle Fog Computing Dashboard")
 
-# -----------------------------
-# Dummy Data (Replace later)
-# -----------------------------
-if os.path.exists("snapshot.json"):
+# ----------------------------------------------------
+# Read Live Snapshot
+# ----------------------------------------------------
 
-    with open("snapshot.json","r") as f:
-        snapshot=json.load(f)
-
-else:
-
+if not os.path.exists("snapshot.json"):
     st.warning("Waiting for simulation...")
-
     st.stop()
 
-vehicles=snapshot["vehicles"]
+with open("snapshot.json", "r") as f:
+    snapshot = json.load(f)
 
-uavs=snapshot["uavs"]
+vehicles = snapshot.get("vehicles", [])
+uavs = snapshot.get("uavs", [])
+rsus = snapshot.get("rsus", [])
 
-rsus=[(r["x"],r["y"]) for r in snapshot["rsus"]]
+# ----------------------------------------------------
+# Top Dashboard Cards
+# ----------------------------------------------------
 
-# -----------------------------
-# Top Information
-# -----------------------------
+col1, col2, col3, col4 = st.columns(4)
 
-c1,c2,c3 = st.columns(3)
+with col1:
+    st.metric("⏱ Simulation Time", f"{snapshot['time']:.1f} s")
 
-with c1:
-    st.subheader("Simulation")
-    st.metric("Time", f"{snapshot['time']} s")
-    st.metric("Step", snapshot["step"])
-    st.metric("Episode", snapshot["episode"])
+with col2:
+    st.metric("🚗 Vehicles", len(vehicles))
 
-with c2:
-    st.subheader("Environment")
-    st.metric("Deployment", snapshot["deployment"])
-    st.metric("Vehicles", snapshot["vehicle_count"])
-    st.metric("UAVs", snapshot["uav_count"])
+with col3:
+    st.metric("🛸 UAVs", len(uavs))
 
-with c3:
-    st.subheader("Performance")
-    st.metric("Delay", f"{snapshot['simulation_delay']:.2f} s")
+with col4:
+    st.metric("⚡ Delay", f"{snapshot['simulation_delay']:.2f} s")
 
 st.divider()
 
-# -----------------------------
-# Map
-# -----------------------------
+# ----------------------------------------------------
+# Layout
+# ----------------------------------------------------
 
-left,right = st.columns([2,1])
+left, right = st.columns([3, 1])
+
+# ====================================================
+# LEFT SIDE
+# ====================================================
 
 with left:
 
-    st.subheader("Live Map")
+    st.subheader("🌍 AirFogSim Digital Twin")
 
-    fig,ax = plt.subplots(figsize=(8,8))
+    fig = go.Figure()
 
+    # ---------------------------------------
     # Vehicles
-    vx=[v["x"] for v in vehicles]
-    vy=[v["y"] for v in vehicles]
-    ax.scatter(vx,vy,c="blue",label="Vehicles",s=30)
+    # ---------------------------------------
 
+    if len(vehicles) > 0:
+
+        fig.add_trace(
+
+            go.Scatter(
+
+                x=[v["x"] for v in vehicles],
+                y=[v["y"] for v in vehicles],
+
+                mode="markers",
+
+                name="Vehicles",
+
+                marker=dict(
+                    size=8,
+                    color="#3B82F6",
+                    symbol="circle"
+                ),
+
+                customdata=[
+                    [v["id"], v["speed"], v["angle"]]
+                    for v in vehicles
+                ],
+
+                hovertemplate=
+                "<b>Vehicle %{customdata[0]}</b><br>"
+                "Speed: %{customdata[1]:.2f} m/s<br>"
+                "Angle: %{customdata[2]:.1f}°<br>"
+                "X: %{x:.1f}<br>"
+                "Y: %{y:.1f}<extra></extra>"
+
+            )
+
+        )
+
+    # ---------------------------------------
     # UAVs
-    ux=[u["x"] for u in uavs]
-    uy=[u["y"] for u in uavs]
-    ax.scatter(ux,uy,c="green",marker="^",label="UAV",s=80)
+    # ---------------------------------------
 
+    if len(uavs) > 0:
+
+        fig.add_trace(
+
+            go.Scatter(
+
+                x=[u["x"] for u in uavs],
+                y=[u["y"] for u in uavs],
+
+                mode="markers",
+
+                name="UAV",
+
+                marker=dict(
+                    size=14,
+                    color="#10B981",
+                    symbol="triangle-up"
+                ),
+
+                text=[
+                    f"""
+                    UAV {u['id']}
+                    """
+                    for u in uavs
+                ],
+
+                hoverinfo="text"
+
+            )
+
+        )
+
+    # ---------------------------------------
     # RSUs
-    rx=[r[0] for r in rsus]
-    ry=[r[1] for r in rsus]
-    ax.scatter(rx,ry,c="red",marker="s",label="RSU",s=80)
+    # ---------------------------------------
 
-    ax.set_xlim(0,2000)
-    ax.set_ylim(0,2000)
+    if len(rsus) > 0:
 
-    ax.set_xlabel("X (m)")
-    ax.set_ylabel("Y (m)")
+        fig.add_trace(
 
-    ax.legend()
+            go.Scatter(
 
-    st.pyplot(fig)
+                x=[r["x"] for r in rsus],
+                y=[r["y"] for r in rsus],
+
+                mode="markers",
+
+                name="RSU",
+
+                marker=dict(
+                    size=18,
+                    color="#EF4444",
+                    symbol="square"
+                ),
+
+                text=[
+                    f"RSU {r['id']}"
+                    for r in rsus
+                ],
+
+                hoverinfo="text"
+
+            )
+
+        )
+
+    # ---------------------------------------
+    # Layout
+    # ---------------------------------------
+
+    fig.update_layout(
+
+        template="plotly_dark",
+
+        height=700,
+
+        paper_bgcolor="#111111",
+
+        plot_bgcolor="#111111",
+
+        xaxis=dict(
+            title="X Position (m)",
+            showgrid=True,
+            gridcolor="#333333"
+        ),
+
+        yaxis=dict(
+            title="Y Position (m)",
+            showgrid=True,
+            gridcolor="#333333",
+            scaleanchor="x"
+        ),
+
+        legend=dict(
+            orientation="h",
+            y=1.05
+        ),
+
+        margin=dict(
+            l=20,
+            r=20,
+            t=20,
+            b=20
+        )
+
+    )
+
+    if vehicles:
+
+        xs = [v["x"] for v in vehicles]
+        ys = [v["y"] for v in vehicles]
+
+        padding = 100
+
+        fig.update_xaxes(
+            range=[min(xs)-padding, max(xs)+padding]
+        )
+
+        fig.update_yaxes(
+            range=[min(ys)-padding, max(ys)+padding]
+        )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        config={
+            "displaylogo": False,
+            "scrollZoom": True
+        }
+    )
+
+# ====================================================
+# RIGHT PANEL
+# ====================================================
 
 with right:
 
-    st.subheader("Sample Vehicle")
+    st.subheader("📊 Simulation")
 
-    st.write(vehicles[0])
+    st.metric("Iteration", snapshot["iteration"])
+    st.metric("Episode", snapshot["episode"])
+    st.metric("Step", snapshot["step"])
+    st.metric("Deployment", snapshot["deployment"])
 
-st.divider()
+    st.divider()
 
-# -----------------------------
+    st.subheader("🚗 Sample Vehicle")
+
+    if len(vehicles):
+
+        v = max(
+            vehicles,
+            key=lambda x: x["speed"]
+        )
+
+        st.write(f"**Vehicle ID:** {v['id']}")
+        st.write(f"**Speed:** {v['speed']:.2f} m/s")
+        st.write(f"**X:** {v['x']:.2f}")
+        st.write(f"**Y:** {v['y']:.2f}")
+        st.write(f"**Angle:** {v['angle']:.2f}")
+
+    st.divider()
+
+    st.subheader("📈 Statistics")
+
+    avg_speed = 0
+
+    if len(vehicles):
+
+        avg_speed = sum(v["speed"] for v in vehicles) / len(vehicles)
+
+    st.metric("Average Speed", f"{avg_speed:.2f} m/s")
+
+    st.metric(
+        "Vehicle Density",
+        f"{len(vehicles)} Active"
+    )
+
+    fps = 1 / max(snapshot["simulation_delay"], 1e-6)
+
+    st.metric(
+        "Dashboard FPS",
+        f"{fps:.1f}"
+    )
+
+# ----------------------------------------------------
 # Vehicle Table
-# -----------------------------
-
-st.subheader("Vehicle List")
-
-df=pd.DataFrame(vehicles)
-
-st.dataframe(df,use_container_width=True)
+# ----------------------------------------------------
 
 st.divider()
 
-# -----------------------------
-# Simulation Log
-# -----------------------------
+st.subheader("🚘 Vehicle Information")
 
-st.subheader("Simulation Log")
+if len(vehicles):
 
-st.code("""
-[22.0] Vehicles Updated
-[22.0] UAV Updated
-[22.0] Tasks Generated
-[22.0] PPO Decision Completed
-""")
+    df = pd.DataFrame(vehicles)
+
+    df = df.sort_values("speed", ascending=False)
+
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+# ----------------------------------------------------
+# Footer
+# ----------------------------------------------------
+
+st.divider()
+
+st.caption(
+    "AirFogSim Digital Twin | SUMO | PPO | Plotly | Real-Time Visualization"
+)

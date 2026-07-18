@@ -7,6 +7,7 @@
 @Site    :   https://github.com/Zhiwei-Wei
 '''
 
+import copy
 import json
 import os
 from uvfogsim.vehicle_manager import VehicleManager
@@ -61,19 +62,33 @@ class DRLEnvironmentWrapper():
         self.bbox = min_x, min_y, max_x, max_y
         self.location_bound = conv_boundary
     def update_vehicle_positions(self, vehicle_ids):
+
+
         row_data_dict = {}
         self.veh_positions = []
-        for vehicle_id in vehicle_ids:
-            x, y = self.traci_connection.vehicle.getPosition(vehicle_id)
-            row_data = {}
-            row_data['id'] = int(vehicle_id)
-            row_data['x'] = x
-            row_data['y'] = y
-            row_data['angle'] = self.traci_connection.vehicle.getAngle(vehicle_id)
-            row_data['speed'] = self.traci_connection.vehicle.getSpeed(vehicle_id)
-            row_data['speedFactor'] = self.traci_connection.vehicle.getSpeedFactor(vehicle_id)
-            row_data_dict[int(vehicle_id)] = row_data
-            self.veh_positions.append((x, y))
+
+        for i, vehicle_id in enumerate(vehicle_ids):
+            
+
+            try:
+                x, y = self.traci_connection.vehicle.getPosition(vehicle_id)
+
+                row_data = {
+                    "id": int(vehicle_id),
+                    "x": x,
+                    "y": y,
+                    "angle": self.traci_connection.vehicle.getAngle(vehicle_id),
+                    "speed": self.traci_connection.vehicle.getSpeed(vehicle_id),
+                    "speedFactor": self.traci_connection.vehicle.getSpeedFactor(vehicle_id),
+                }
+
+                row_data_dict[int(vehicle_id)] = row_data
+                self.veh_positions.append((x, y))
+
+            except Exception:
+                continue
+
+        
         return row_data_dict
 
         
@@ -115,7 +130,11 @@ class DRLEnvironmentWrapper():
                     vehicle_ids = self.traci_connection.vehicle.getIDList()
                     # 1.1 控制车辆在canvas显示的位置
                     row_data_dict = self.update_vehicle_positions(vehicle_ids)
-                    # 1.2 更新车辆在仿真内的位置
+
+                    # Keep a copy for the dashboard BEFORE renew_veh_positions modifies it
+                    snapshot_rows = copy.deepcopy(row_data_dict)
+
+                    # Update the simulator
                     removed_vehicle_ids = env.renew_veh_positions(vehicle_ids, row_data_dict)
                     env.FastFading_Module()  
                     # 1.4 更新UAV的位置.然后每个设备，都可以获取最近范围的n个服务车辆的信息
@@ -170,7 +189,7 @@ class DRLEnvironmentWrapper():
                                 "speed": float(v["speed"]),
                                 "angle": float(v["angle"])
                             }
-                            for v in row_data_dict.values()
+                            for v in snapshot_rows.values()
                         ],
 
                         "uavs": [
@@ -193,6 +212,7 @@ class DRLEnvironmentWrapper():
                         ]
                     }
 
+                    
                     with open("snapshot.json", "w") as f:
                         json.dump(snapshot, f, indent=2)
 
