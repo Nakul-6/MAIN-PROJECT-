@@ -139,6 +139,7 @@ class DRLEnvironmentWrapper():
                     env.FastFading_Module()  
                     # 1.4 更新UAV的位置.然后每个设备，都可以获取最近范围的n个服务车辆的信息
                     self.uav_positions = uav_manager.get_UAV_position(self.result_id) # [n_UAV, 3]
+                    print(self.uav_positions[0])
                     # self.uav_positions的前两项乘以5，因为存储的是网格信息
                     tmp_uav_positions = self.uav_positions.copy()
                     tmp_uav_positions[:, :2] = tmp_uav_positions[:, :2] * 5
@@ -169,6 +170,11 @@ class DRLEnvironmentWrapper():
                     # 12 检查超时的任务（包括计算和验算，以及to_pay）
                     env.Check_To_X_Tasks()
 
+                    vehicle_rsu = {}
+
+                    for vehicle in env.vehicle_by_index:
+                        vehicle_rsu[vehicle.id] = vehicle.nearest_BS.id
+
                     snapshot = {
                         "time": float(self.traci_connection.simulation.getTime()),
                         "iteration": int(self.cur_iter),
@@ -187,7 +193,8 @@ class DRLEnvironmentWrapper():
                                 "x": float(v["x"]),
                                 "y": float(v["y"]),
                                 "speed": float(v["speed"]),
-                                "angle": float(v["angle"])
+                                "angle": float(v["angle"]),
+                                "nearest_rsu": vehicle_rsu.get(int(v["id"]), -1)
                             }
                             for v in snapshot_rows.values()
                         ],
@@ -195,11 +202,11 @@ class DRLEnvironmentWrapper():
                         "uavs": [
                             {
                                 "id": i,
-                                "x": float(pos[0]),
-                                "y": float(pos[1]),
-                                "z": float(pos[2])
+                                "x": float(tmp_uav_positions[i][0]),
+                                "y": float(tmp_uav_positions[i][1]),
+                                "z": float(tmp_uav_positions[i][2])
                             }
-                            for i, pos in enumerate(self.uav_positions)
+                            for i in range(len(tmp_uav_positions))
                         ],
 
                         "rsus": [
